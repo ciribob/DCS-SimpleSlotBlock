@@ -47,7 +47,7 @@ ssb.controlNonAircraftSlots = false -- if true, only unique DCS Player ids will 
 ssb.enabledFlagValue = 0  -- what value to look for to enable a slot.
 
 
--- any aircraft slot controlled by the PILOT Name (not group name!)
+-- any aircraft slot controlled by the GROUP Name (not pilot name!)
 -- that contains a prefix below will only allow players with that prefix
 -- to join the slot
 --
