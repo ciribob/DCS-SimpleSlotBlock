@@ -29,9 +29,24 @@ local ssb = {} -- DONT REMOVE!!!
    The SSB flag is required to turn on slot blocking for that mission
 
    The flags will NOT interfere with mission flags
+   
+   An addition has been done...
+   
+   You can now kick players out of their airplane or unit back to spectators during your running missions.
+   This by setting the flags ...
+   
+   A few things:
+   
+     - Kicking players is enabled by default, but you can disable the function by modifying ssb.KickPlayers.
+   
+       ssb.kickPlayers = false -- This will disable the players to be kicked. 
+
+     - Once you have kicked a player, you may want to reset the flag to allow the player to enter again.
+       The slot will be blocked if the flag will remain keep a value other than 0.
 
  ]]
 
+ssb.kickPlayers = true
 ssb.showEnabledMessage = true -- if set to true, the player will be told that the slot is enabled when switching to it
 ssb.controlNonAircraftSlots = false -- if true, only unique DCS Player ids will be allowed for the Commander / GCI / Observer Slots
 
@@ -75,7 +90,9 @@ ssb.commanderPlayerUCID = {
 
 
 
-ssb.version = "1.0"
+ssb.version = "1.1"
+
+ssb.timePrev = 0
 
 -- Logic for determining if player is allowed in a slot
 function ssb.shouldAllowAircraftSlot(_playerID, _slotID) -- _slotID == Unit ID unless its multi aircraft in which case slotID is unitId_seatID
@@ -169,6 +186,51 @@ function ssb.getGroupName(_slotID)
 end
 
 
+ssb.onSimulationFrame = function()
+
+  -- For each slot, check the flags...
+  
+  ssb.timeNow = DCS.getModelTime()
+  
+  -- Check every 5 seconds if a player needs to be kicked.
+  if ssb.kickPlayers and ssb.timePrev + 5 <= ssb.timeNow then
+    
+    ssb.timePrev = ssb.timeNow
+
+    if DCS.isServer() and DCS.isMultiplayer() then
+      if DCS.getModelTime() > 1 and  ssb.slotBlockEnabled() then  -- must check this to prevent a possible CTD by using a_do_script before the game is ready to use a_do_script. -- Source GRIMES :)
+  
+        local Players = net.get_player_list()  
+        for PlayerIDIndex, playerID in pairs( Players ) do
+      
+          -- is player still in a valid slot
+          local _playerDetails = net.get_player_info( playerID )
+    
+          if _playerDetails ~=nil and _playerDetails.side ~= 0 and _playerDetails.slot ~= "" and _playerDetails.slot ~= nil then
+    
+            local _unitRole = DCS.getUnitType( _playerDetails.slot )
+            if _unitRole ~= nil and
+                ( _unitRole == "forward_observer" or
+                  _unitRole == "instructor"or
+                  _unitRole == "artillery_commander" or
+                  _unitRole == "observer" )
+            then
+              return true
+            end
+    
+            local _allow = ssb.shouldAllowAircraftSlot(playerID, _playerDetails.slot)
+    
+            if not _allow then
+                ssb.rejectPlayer(playerID)
+            end
+          end
+        end
+      end
+    end
+  end
+end
+
+
 
 --DOC
 -- onGameEvent(eventName,arg1,arg2,arg3,arg4)
@@ -187,8 +249,11 @@ end
 --
 ssb.onGameEvent = function(eventName,playerID,arg2,arg3,arg4) -- This means if a slot is disabled while the player is flying, they'll be removed
 
+    net.log( "Event: "..eventName )
+
     if DCS.isServer() and DCS.isMultiplayer() then
         if DCS.getModelTime() > 1 and  ssb.slotBlockEnabled() then  -- must check this to prevent a possible CTD by using a_do_script before the game is ready to use a_do_script. -- Source GRIMES :)
+
 
             if eventName == "self_kill"
                     or eventName == "crash"
