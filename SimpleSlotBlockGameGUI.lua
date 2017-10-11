@@ -40,15 +40,21 @@ local ssb = {} -- DONT REMOVE!!!
      - Kicking players is enabled by default, but you can disable the function by modifying ssb.KickPlayers.
    
        ssb.kickPlayers = false -- This will disable the players to be kicked. 
-
-     - Once you have kicked a player, you may want to reset the flag to allow the player to enter again.
-       The slot will be blocked if the flag will remain keep a value other than 0.
+       
+     - Slotblocker will check upon a defined time interval whether a player needs to be kicked.
+     
+       ssb.kickTimeInterval = 5 -- Check every 5 seconds if a player needs to be kicked.
 
  ]]
 
-ssb.kickPlayers = true
 ssb.showEnabledMessage = true -- if set to true, the player will be told that the slot is enabled when switching to it
 ssb.controlNonAircraftSlots = false -- if true, only unique DCS Player ids will be allowed for the Commander / GCI / Observer Slots
+
+
+-- New addon version 1.1 -- kicking of players.
+ssb.kickPlayers = true -- Change to false if you want to disable to kick players.
+ssb.kickTimeInterval = 5 -- Change the amount of seconds if you want to shorten the interval time or make the interval time longer.
+ssb.kickTimePrev = 0 -- leave this untouched!
 
 
 -- If you set this to 0, all slots are ENABLED
@@ -92,7 +98,7 @@ ssb.commanderPlayerUCID = {
 
 ssb.version = "1.1"
 
-ssb.timePrev = 0
+
 
 -- Logic for determining if player is allowed in a slot
 function ssb.shouldAllowAircraftSlot(_playerID, _slotID) -- _slotID == Unit ID unless its multi aircraft in which case slotID is unitId_seatID
@@ -190,12 +196,12 @@ ssb.onSimulationFrame = function()
 
   -- For each slot, check the flags...
   
-  ssb.timeNow = DCS.getModelTime()
+  ssb.kickTimeNow = DCS.getModelTime()
   
   -- Check every 5 seconds if a player needs to be kicked.
-  if ssb.kickPlayers and ssb.timePrev + 5 <= ssb.timeNow then
+  if ssb.kickPlayers and ssb.kickTimePrev + ssb.kickTimeInterval <= ssb.kickTimeNow then
     
-    ssb.timePrev = ssb.timeNow
+    ssb.kickTimePrev = ssb.kickTimeNow
 
     if DCS.isServer() and DCS.isMultiplayer() then
       if DCS.getModelTime() > 1 and  ssb.slotBlockEnabled() then  -- must check this to prevent a possible CTD by using a_do_script before the game is ready to use a_do_script. -- Source GRIMES :)
