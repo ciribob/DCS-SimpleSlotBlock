@@ -255,11 +255,8 @@ end
 --
 ssb.onGameEvent = function(eventName,playerID,arg2,arg3,arg4) -- This means if a slot is disabled while the player is flying, they'll be removed
 
-    net.log( "Event: "..eventName )
-
     if DCS.isServer() and DCS.isMultiplayer() then
         if DCS.getModelTime() > 1 and  ssb.slotBlockEnabled() then  -- must check this to prevent a possible CTD by using a_do_script before the game is ready to use a_do_script. -- Source GRIMES :)
-
 
             if eventName == "self_kill"
                     or eventName == "crash"
