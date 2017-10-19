@@ -138,6 +138,7 @@ function ssb.shouldAllowAircraftSlot(_playerID, _slotID) -- _slotID == Unit ID u
 
 end
 
+
 -- Logic to allow a player in a slot
 function ssb.allowAircraftSlot(_playerID, _slotID) -- _slotID == Unit ID unless its multi aircraft in which case slotID is unitId_seatID (added by FlightControl)
 
@@ -160,6 +161,7 @@ function ssb.allowAircraftSlot(_playerID, _slotID) -- _slotID == Unit ID unless 
   return _result
 
 end
+
 
 function ssb.checkClanSlot(_playerID, _unitName)
 
@@ -218,8 +220,6 @@ function ssb.setFlagValue(_flag, _number) -- Added by FlightControl
 end
 
 
-
-
 -- _slotID == Unit ID unless its multi aircraft in which case slotID is unitId_seatID
 function ssb.getUnitId(_slotID)
   local _unitId = tostring(_slotID)
@@ -232,6 +232,7 @@ function ssb.getUnitId(_slotID)
   return tonumber(_unitId)
 end
 
+
 function ssb.getGroupName(_slotID)
 
   local _name = DCS.getUnitProperty(_slotID, DCS.UNIT_GROUPNAME)
@@ -241,59 +242,12 @@ function ssb.getGroupName(_slotID)
 end
 
 
-ssb.onSimulationFrame = function() -- Added by FlightControl
-
-  -- For each slot, check the flags...
-
-  ssb.kickTimeNow = DCS.getModelTime()
-
-  -- Check every 5 seconds if a player needs to be kicked.
-  if ssb.kickPlayers and ssb.kickTimePrev + ssb.kickTimeInterval <= ssb.kickTimeNow then
-
-    ssb.kickTimePrev = ssb.kickTimeNow
-
-    if DCS.isServer() and DCS.isMultiplayer() then
-      if DCS.getModelTime() > 1 and  ssb.slotBlockEnabled() then  -- must check this to prevent a possible CTD by using a_do_script before the game is ready to use a_do_script. -- Source GRIMES :)
-
-        local Players = net.get_player_list()
-        for PlayerIDIndex, playerID in pairs( Players ) do
-
-          -- is player still in a valid slot
-          local _playerDetails = net.get_player_info( playerID )
-
-          if _playerDetails ~=nil and _playerDetails.side ~= 0 and _playerDetails.slot ~= "" and _playerDetails.slot ~= nil then
-
-            local _unitRole = DCS.getUnitType( _playerDetails.slot )
-            if _unitRole ~= nil and
-              ( _unitRole == "forward_observer" or
-              _unitRole == "instructor"or
-              _unitRole == "artillery_commander" or
-              _unitRole == "observer" )
-            then
-              return true
-            end
-
-            local _allow = ssb.shouldAllowAircraftSlot(playerID, _playerDetails.slot)
-
-            if not _allow then
-              ssb.rejectPlayer(playerID)
-            end
-          end
-        end
-      end
-    end
-  end
-end
-
-
-
 --- Reset the persistent variables when a new mission is loaded.
 ssb.onMissionLoadEnd = function()
 
   ssb.kickTimePrev = 0 -- Reset when a new mission has been loaded!
 
 end
-
 
 
 --- For each simulation frame, check if a player needs to be kicked.
@@ -345,8 +299,7 @@ ssb.onSimulationFrame = function()
 end
 
 
-
---DOC
+---DOC
 -- onGameEvent(eventName,arg1,arg2,arg3,arg4)
 --"friendly_fire", playerID, weaponName, victimPlayerID
 --"mission_end", winner, msg
@@ -428,6 +381,7 @@ ssb.onPlayerTryChangeSlot = function(playerID, side, slotID)
 
 end
 
+
 ssb.slotBlockEnabled = function()
 
   local _res = ssb.getFlagValue("SSB") --SSB disabled by Default
@@ -435,6 +389,7 @@ ssb.slotBlockEnabled = function()
   return _res == 100
 
 end
+
 
 ssb.rejectMessage = function(playerID)
   local _playerName = net.get_player_info(playerID, 'name')
@@ -457,6 +412,7 @@ ssb.rejectPlayer = function(playerID)
   ssb.rejectMessage(playerID)
   
 end
+
 
 ssb.trimStr = function(_str)
   return  string.format( "%s", _str:match( "^%s*(.-)%s*$" ) )
