@@ -287,6 +287,16 @@ end
 
 
 
+--- Reset the persistent variables when a new mission is loaded.
+ssb.onMissionLoadEnd = function()
+
+  ssb.kickTimePrev = 0 -- Reset when a new mission has been loaded!
+
+end
+
+
+
+--- For each simulation frame, check if a player needs to be kicked.
 ssb.onSimulationFrame = function()
 
   -- For each slot, check the flags...
