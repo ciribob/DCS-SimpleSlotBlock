@@ -353,7 +353,7 @@ ssb.onPlayerTryChangeSlot = function(playerID, side, slotID)
 
         net.log("SSB - ALLOWING Player Selected Non Aircraft Slot - player: ".._playerName.." side:"..side.." slot: "..slotID.." ucid: ".._ucid.." type: ".._unitRole)
 
-        return true
+        return 
       else
         local _allow = ssb.shouldAllowAircraftSlot(playerID,slotID)
 
@@ -377,7 +377,7 @@ ssb.onPlayerTryChangeSlot = function(playerID, side, slotID)
     end
   end
 
-  return true
+  return 
 
 end
 
