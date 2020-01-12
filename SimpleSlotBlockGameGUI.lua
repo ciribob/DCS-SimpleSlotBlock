@@ -307,10 +307,10 @@ end
 --"self_kill", playerID
 ssb.onPlayerChangeSlot = function(playerID)
 
-  local slotID = net.get_player_info(playerID, 'slot')
-  local side = net.get_player_info(playerID, 'side')
-  if  DCS.isServer() and DCS.isMultiplayer() then
 
+  if  DCS.isServer() and DCS.isMultiplayer() then
+    local slotID = net.get_player_info(playerID, 'slot')
+    local side = net.get_player_info(playerID, 'side')
     if  (side ~=0 and  slotID ~='' and slotID ~= nil)  and  ssb.slotBlockEnabled() then
 
       local _ucid = net.get_player_info(playerID, 'ucid')
