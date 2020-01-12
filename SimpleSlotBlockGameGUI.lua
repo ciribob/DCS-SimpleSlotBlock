@@ -305,9 +305,12 @@ end
 --"mission_end", winner, msg
 --"kill", killerPlayerID, killerUnitType, killerSide, victimPlayerID, victimUnitType, victimSide, weaponName
 --"self_kill", playerID
-ssb.onPlayerTryChangeSlot = function(playerID, side, slotID)
+ssb.onPlayerChangeSlot = function(playerID)
 
+  local slotID = net.get_player_info(playerID, 'slot')
+  local side = net.get_player_info(playerID, 'side')
   if  DCS.isServer() and DCS.isMultiplayer() then
+
     if  (side ~=0 and  slotID ~='' and slotID ~= nil)  and  ssb.slotBlockEnabled() then
 
       local _ucid = net.get_player_info(playerID, 'ucid')
@@ -346,8 +349,8 @@ ssb.onPlayerTryChangeSlot = function(playerID, side, slotID)
 
             ssb.rejectMessage(playerID)
             net.log("SSB - REJECTING Player Selected Non Aircraft Slot - player: ".._playerName.." side:"..side.." slot: "..slotID.." ucid: ".._ucid.." type: ".._unitRole)
-
-            return false
+             ssb.rejectPlayer(playerID)
+            return 
           end
         end
 
@@ -361,8 +364,8 @@ ssb.onPlayerTryChangeSlot = function(playerID, side, slotID)
           net.log("SSB - REJECTING Aircraft Slot - player: ".._playerName.." side:"..side.." slot: "..slotID.." ucid: ".._ucid)
 
           ssb.rejectMessage(playerID)
-
-          return false
+          ssb.rejectPlayer(playerID)
+          return 
         else
           if ssb.showEnabledMessage then
             --Disable chat message to user
