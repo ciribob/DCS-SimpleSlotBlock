@@ -2,7 +2,7 @@ local ssb = {} -- DONT REMOVE!!!
 
 --[[
 
-   Simple Slot Block - V 1.1
+   Simple Slot Block - V 1.2
 
    Put this file in C:/Users/<YOUR USERNAME>/DCS/Scripts for 1.5 or C:/Users/<YOUR USERNAME>/DCS.openalpha/Scripts for 2.0
 
@@ -53,8 +53,22 @@ local ssb = {} -- DONT REMOVE!!!
          => ssb.kickReset = true -- (default) The slot will be automatically reset to open, after kicking the player.
          => ssb.kickReset = false -- The slot will NOT be automatically reset to open, after kicking the player.
 
-       
 
+   * 2020-08-04 - mobettameta
+   
+	 
+	 You can now add player UCIDs to a permablock list.  This will block them from all slots no matter what the flag state is.
+	 SSB must still be enabled for this to function.
+	 
+	 Just add UCIDs of banned players (comma separated) to :
+	 
+	 	ssb.permaBlockedPlayerUCID = {}
+		
+		
+	 Other clean up:
+		Removed extra "ssb.rejectMessage(playerID)" in ssb.onPlayerChangeSlot
+		Removed unused function "ssb.getUnitId(_slotID)"
+		
 --]]
 
 ssb.showEnabledMessage = true -- if set to true, the player will be told that the slot is enabled when switching to it
@@ -106,16 +120,29 @@ ssb.commanderPlayerUCID = {
 }
 
 
+-- add UCID of Players to this list that you want to permanently block from all slots (slot flags do not matter)
+ssb.permaBlockedPlayerUCID = {
+  "a_unique_player_ucid",
+  "another_unique_player_ucid"
+}
 
-ssb.version = "1.1"
-
+ssb.version = "1.2"
 
 
 -- Logic for determining if player is allowed in a slot
 function ssb.shouldAllowAircraftSlot(_playerID, _slotID) -- _slotID == Unit ID unless its multi aircraft in which case slotID is unitId_seatID
 
   local _groupName = ssb.getGroupName(_slotID)
+  local _playerName = net.get_player_info(_playerID, 'name')
+  local _ucid = net.get_player_info(_playerID, 'ucid')
 
+  for _,_value in pairs(ssb.permaBlockedPlayerUCID) do -- added check for permaBlocked Player UCIDs (added by mobettameta)
+	if _value == _ucid then
+	  net.log("SSB - Player PermaBlocked - Name: ".._playerName.." UCID: ".._ucid.." Slot: ".._slotID)
+	  return false
+	end
+  end
+		
   if _groupName == nil or _groupName == "" then
     net.log("SSB - Unable to get group name for slot ".._slotID)
     return true
@@ -217,19 +244,6 @@ function ssb.setFlagValue(_flag, _number) -- Added by FlightControl
     return false
   end
   return true
-end
-
-
--- _slotID == Unit ID unless its multi aircraft in which case slotID is unitId_seatID
-function ssb.getUnitId(_slotID)
-  local _unitId = tostring(_slotID)
-  if string.find(tostring(_unitId),"_",1,true) then
-    --extract substring
-    _unitId = string.sub(_unitId,1,string.find(_unitId,"_",1,true))
-    net.log("Unit ID Substr ".._unitId)
-  end
-
-  return tonumber(_unitId)
 end
 
 
@@ -363,7 +377,6 @@ ssb.onPlayerChangeSlot = function(playerID)
         if not _allow then
           net.log("SSB - REJECTING Aircraft Slot - player: ".._playerName.." side:"..side.." slot: "..slotID.." ucid: ".._ucid)
 
-          ssb.rejectMessage(playerID)
           ssb.rejectPlayer(playerID)
           return 
         else
