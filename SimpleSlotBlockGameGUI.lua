@@ -2,7 +2,7 @@ local ssb = {} -- DONT REMOVE!!!
 
 --[[
 
-   Simple Slot Block - V 1.2
+   Simple Slot Block - V 1.3
 
    Put this file in C:/Users/<YOUR USERNAME>/DCS/Scripts for 1.5 or C:/Users/<YOUR USERNAME>/DCS.openalpha/Scripts for 2.0
 
@@ -246,9 +246,9 @@ function ssb.setFlagValue(_flag, _number) -- Added by FlightControl
   return true
 end
 
-
 function ssb.getGroupName(_slotID)
 
+  _slotID = string.gsub(_slotID, "%-%d$", "")
   local _name = DCS.getUnitProperty(_slotID, DCS.UNIT_GROUPNAME)
 
   return _name
