@@ -68,6 +68,9 @@ local ssb = {} -- DONT REMOVE!!!
 	 Other clean up:
 		Removed extra "ssb.rejectMessage(playerID)" in ssb.onPlayerChangeSlot
 		Removed unused function "ssb.getUnitId(_slotID)"
+
+
+    * 2022-03-20 - Ciribob - Fix error spam if its a multicrew aircraft
 		
 --]]
 
@@ -126,7 +129,7 @@ ssb.permaBlockedPlayerUCID = {
   "another_unique_player_ucid"
 }
 
-ssb.version = "1.2"
+ssb.version = "1.3"
 
 
 -- Logic for determining if player is allowed in a slot
